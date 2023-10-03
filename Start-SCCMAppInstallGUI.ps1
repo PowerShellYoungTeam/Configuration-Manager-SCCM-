@@ -91,8 +91,8 @@ Function Select-CCMMachineGUI{
 
     ### Enter Hostname GUI ###
     $ChooseHostnameForm = New-Object System.Windows.Forms.Form
-    $ChooseHostnameForm.Text = 'Enter Hostname'
-    $ChooseHostnameForm.Size = New-Object System.Drawing.Size(350,200)
+    $ChooseHostnameForm.Text = 'SCCM App Installer'
+    $ChooseHostnameForm.Size = New-Object System.Drawing.Size(350,250)
     $ChooseHostnameForm.StartPosition = 'CenterScreen'
 
     #Enter Hostname Label and Textbox
@@ -116,8 +116,24 @@ Function Select-CCMMachineGUI{
     $ConfigMgrActionsCheckbox.Checked = $true
     $ChooseHostnameForm.Controls.Add($ConfigMgrActionsCheckbox)
 
+    $Methodlabel = New-Object System.Windows.Forms.Label
+    $Methodlabel.Location = New-Object System.Drawing.Point(50,110)
+    $Methodlabel.Size = New-Object System.Drawing.Size(280,20)
+    $Methodlabel.Text = 'Choose Action'
+    $ChooseHostnameForm.Controls.Add($Methodlabel)
+
+    $MethodList = New-Object system.Windows.Forms.ComboBox
+    $MethodList.width = 170
+    $MethodList.autosize = $true
+    # Add the items in the dropdown list
+    @('Install','Uninstall') | ForEach-Object {[void] $MethodList.Items.Add($_)}
+    # Select the default value
+    $MethodList.SelectedIndex = 0
+    $MethodList.location = New-Object System.Drawing.Point(50,130)
+    $ChooseHostnameForm.Controls.Add($MethodList)
+    
     $okButton = New-Object System.Windows.Forms.Button
-    $okButton.Location = New-Object System.Drawing.Point(75,120)
+    $okButton.Location = New-Object System.Drawing.Point(75,180)
     $okButton.Size = New-Object System.Drawing.Size(75,23)
     $okButton.Text = 'OK'
     $okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
@@ -125,7 +141,7 @@ Function Select-CCMMachineGUI{
     $ChooseHostnameForm.Controls.Add($okButton)
 
     $cancelButton = New-Object System.Windows.Forms.Button
-    $cancelButton.Location = New-Object System.Drawing.Point(200,120)
+    $cancelButton.Location = New-Object System.Drawing.Point(200,180)
     $cancelButton.Size = New-Object System.Drawing.Size(75,23)
     $cancelButton.Text = 'Cancel'
     $cancelButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
@@ -142,6 +158,7 @@ Function Select-CCMMachineGUI{
     {
         $Hostname = $textbox.Text
         $Script:Hostname = $Hostname
+        $Script:Method = $MethodList.Text
 
         if($true -eq $ConfigMgrActionsCheckbox.Checked){
 
@@ -149,7 +166,7 @@ Function Select-CCMMachineGUI{
     
         }
 
-        $Script:CCMApps = (Get-CimInstance -ClassName CCM_Application -Namespace "root\ccm\clientSDK" -ComputerName (get-adcomputer $Hostname -server $Domain).dnshostname  | Select-Object name, installstate, ErrorCode, Publisher, SoftwareVersion, LastInstallTime, LastEvalTime |Sort-Object name)
+        $Script:CCMApps = (Get-CimInstance -ClassName CCM_Application -Namespace "root\ccm\clientSDK" -ComputerName (get-adcomputer $Hostname -server $Domain).dnshostname  | Select-Object name, installstate, ErrorCode, AllowedActions, Publisher, SoftwareVersion, LastInstallTime, LastEvalTime |Sort-Object name)
         
     }else{
 
@@ -168,6 +185,7 @@ Function Select-CCMMachineGUI{
 $CCMApps = @()
 
 $Hostname = $Null
+$Method = $Null
 
 Do{
 
